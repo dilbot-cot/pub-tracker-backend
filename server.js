@@ -16,6 +16,7 @@ app.use(express.json());
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/pubs', require('./routes/pubRoutes'));
 app.use('/api/mealtypes', require('./routes/mealTypeRoutes'));
+app.use('/api/specials', require('./routes/specialsRoutes'));
 
 // Root route
 app.get('/', (req, res) => res.send('API running...'));

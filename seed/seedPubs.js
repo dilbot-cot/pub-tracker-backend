@@ -1,4 +1,5 @@
 const Pub = require('../models/Pub');
+const ADMIN_ID = '67fa01393037c8733acf54f1'
 
 const pubs = [
   {
@@ -190,7 +191,12 @@ const pubs = [
 
 const seedPubs = async (createdBy) => {
   await Pub.deleteMany();
-  const pubsWithUser = pubs.map(pub => ({ ...pub, createdBy }));
+
+  const pubsWithUser = pubs.map(pub => ({
+    ...pub,
+    createdBy
+  }));
+
   await Pub.insertMany(pubsWithUser);
   console.log('🍻 Pubs seeded');
 };

@@ -1,34 +1,48 @@
 const Pub = require('../models/Pub');
 const MealType = require('../models/MealType');
 
-// GET /api/pubs - Public: List all pubs with specials
+// GET /api/pubs - Public: List all pubs with specials (with optional filters)
 exports.getAllPubs = async (req, res) => {
   try {
     const { day, suburb, mealType } = req.query;
 
     let query = {};
-
-    // Case-insensitive suburb match (optional)
     if (suburb) {
       query.suburb = { $regex: new RegExp(`^${suburb}$`, 'i') };
     }
 
-    // Fetch pubs, populate mealType reference
     let pubs = await Pub.find(query)
       .populate('specials.mealType', 'name')
       .sort({ name: 1 });
 
-    // Filter specials by day and/or mealType (in-memory)
-    if (day || mealType) {
-      pubs = pubs.map(pub => {
-        const filteredSpecials = pub.specials.filter(s => {
+    pubs = pubs.map(pub => {
+      const pubObj = pub.toObject();
+
+      // Optionally filter specials
+      let filteredSpecials = pubObj.specials;
+      if (day || mealType) {
+        filteredSpecials = filteredSpecials.filter(s => {
           const matchDay = !day || s.dayOfWeek === day;
-          const matchMealType = !mealType || (s.mealType?.name?.toLowerCase().includes(mealType.toLowerCase()));
+          const matchMealType = !mealType || s.mealType?.name?.toLowerCase().includes(mealType.toLowerCase());
           return matchDay && matchMealType;
         });
+      }
 
-        return { ...pub.toObject(), specials: filteredSpecials };
-      }).filter(pub => pub.specials.length > 0); // only include pubs with matches
+      // Format prices
+      filteredSpecials = filteredSpecials.map(s => ({
+        ...s,
+        price: `$${parseFloat(s.price).toFixed(2)}`
+      }));
+
+      return {
+        ...pubObj,
+        specials: filteredSpecials
+      };
+    });
+
+    // If filtering, remove pubs with no specials
+    if (day || mealType) {
+      pubs = pubs.filter(pub => pub.specials.length > 0);
     }
 
     res.json(pubs);
@@ -38,12 +52,20 @@ exports.getAllPubs = async (req, res) => {
   }
 };
 
+
 // GET /api/pubs/:id - Public: View single pub
 exports.getPubById = async (req, res) => {
   try {
     const pub = await Pub.findById(req.params.id).populate('specials.mealType', 'name');
     if (!pub) return res.status(404).json({ msg: 'Pub not found' });
-    res.json(pub);
+
+    const pubObj = pub.toObject();
+    pubObj.specials = pubObj.specials.map(s => ({
+      ...s,
+      price: `$${parseFloat(s.price).toFixed(2)}`
+    }));
+
+    res.json(pubObj);
   } catch (err) {
     console.error('❌ Error in getPubById:', err.message);
     res.status(500).json({ msg: 'Server error' });
