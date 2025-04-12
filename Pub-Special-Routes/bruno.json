@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Pub-Special-Routes",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
