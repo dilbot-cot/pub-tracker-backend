@@ -1,5 +1,6 @@
 const Pub = require('../models/Pub');
 const MealType = require('../models/MealType');
+const router = require('express').Router();
 
 // GET /api/pubs - Public: List all pubs with specials (with optional filters)
 exports.getAllPubs = async (req, res) => {
@@ -52,7 +53,6 @@ exports.getAllPubs = async (req, res) => {
   }
 };
 
-
 // GET /api/pubs/:id - Public: View single pub
 exports.getPubById = async (req, res) => {
   try {
@@ -88,85 +88,7 @@ exports.createPub = async (req, res) => {
   }
 };
 
-// PUT /api/pubs/:id - Auth: Update own pub
-exports.updateOwnPub = async (req, res) => {
-  try {
-    const pub = await Pub.findById(req.params.id);
-    if (!pub) return res.status(404).json({ msg: 'Pub not found' });
-
-    if (pub.createdBy.toString() !== req.user.userId)
-      return res.status(403).json({ msg: 'Unauthorized' });
-
-    pub.name = req.body.name || pub.name;
-    pub.website = req.body.website || pub.website;
-    pub.suburb = req.body.suburb || pub.suburb;
-
-    await pub.save();
-    res.json(pub);
-  } catch (err) {
-    console.error('❌ Error in updateOwnPub:', err.message);
-    res.status(500).json({ msg: 'Server error' });
-  }
-};
-
-// DELETE /api/pubs/:id - Auth: Delete own pub
-exports.deleteOwnPub = async (req, res) => {
-  try {
-    const pub = await Pub.findById(req.params.id);
-    if (!pub) return res.status(404).json({ msg: 'Pub not found' });
-
-    if (pub.createdBy.toString() !== req.user.userId)
-      return res.status(403).json({ msg: 'Unauthorized' });
-
-    await pub.deleteOne();
-    res.json({ msg: 'Pub deleted' });
-  } catch (err) {
-    console.error('❌ Error in deleteOwnPub:', err.message);
-    res.status(500).json({ msg: 'Server error' });
-  }
-};
-
-// POST /api/pubs/:id/specials - Auth: Add special to pub
-exports.addSpecialToPub = async (req, res) => {
-  try {
-    const { dayOfWeek, mealName, price, mealType } = req.body;
-
-    const pub = await Pub.findById(req.params.id);
-    if (!pub) return res.status(404).json({ msg: 'Pub not found' });
-
-    if (pub.createdBy.toString() !== req.user.userId)
-      return res.status(403).json({ msg: 'Unauthorized' });
-
-    pub.specials.push({ dayOfWeek, mealName, price, mealType });
-    await pub.save();
-
-    res.status(201).json(pub);
-  } catch (err) {
-    console.error('❌ Error in addSpecialToPub:', err.message);
-    res.status(500).json({ msg: 'Server error' });
-  }
-};
-
-// DELETE /api/pubs/:id/specials/:specialId - Auth: Remove special from pub
-exports.removeSpecialFromPub = async (req, res) => {
-  try {
-    const pub = await Pub.findById(req.params.id);
-    if (!pub) return res.status(404).json({ msg: 'Pub not found' });
-
-    if (pub.createdBy.toString() !== req.user.userId)
-      return res.status(403).json({ msg: 'Unauthorized' });
-
-    pub.specials.id(req.params.specialId)?.remove();
-    await pub.save();
-
-    res.json(pub);
-  } catch (err) {
-    console.error('❌ Error in removeSpecialFromPub:', err.message);
-    res.status(500).json({ msg: 'Server error' });
-  }
-};
-
-// PUT /api/pubs/:id/admin - Admin: Update any pub
+// PUT /api/pubs/:id - Admin: Update any pub
 exports.adminUpdatePub = async (req, res) => {
   try {
     const pub = await Pub.findById(req.params.id);
@@ -184,7 +106,7 @@ exports.adminUpdatePub = async (req, res) => {
   }
 };
 
-// DELETE /api/pubs/:id/admin - Admin: Delete any pub
+// DELETE /api/pubs/:id - Admin: Delete any pub
 exports.adminDeletePub = async (req, res) => {
   try {
     const pub = await Pub.findById(req.params.id);
@@ -194,6 +116,40 @@ exports.adminDeletePub = async (req, res) => {
     res.json({ msg: 'Pub deleted by admin' });
   } catch (err) {
     console.error('❌ Error in adminDeletePub:', err.message);
+    res.status(500).json({ msg: 'Server error' });
+  }
+};
+
+// POST /api/pubs/:id/specials - Auth: Add special to pub
+exports.addSpecialToPub = async (req, res) => {
+  try {
+    const { dayOfWeek, mealName, price, mealType } = req.body;
+
+    const pub = await Pub.findById(req.params.id);
+    if (!pub) return res.status(404).json({ msg: 'Pub not found' });
+
+    pub.specials.push({ dayOfWeek, mealName, price, mealType });
+    await pub.save();
+
+    res.status(201).json(pub);
+  } catch (err) {
+    console.error('❌ Error in addSpecialToPub:', err.message);
+    res.status(500).json({ msg: 'Server error' });
+  }
+};
+
+// DELETE /api/pubs/:id/specials/:specialId - Auth: Remove special from pub
+exports.removeSpecialFromPub = async (req, res) => {
+  try {
+    const pub = await Pub.findById(req.params.id);
+    if (!pub) return res.status(404).json({ msg: 'Pub not found' });
+
+    pub.specials.id(req.params.specialId)?.remove();
+    await pub.save();
+
+    res.json(pub);
+  } catch (err) {
+    console.error('❌ Error in removeSpecialFromPub:', err.message);
     res.status(500).json({ msg: 'Server error' });
   }
 };

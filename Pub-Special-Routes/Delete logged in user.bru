@@ -1,0 +1,26 @@
+meta {
+  name: Delete logged in user
+  type: http
+  seq: 5
+}
+
+delete {
+  url: http://localhost:5050/api/auth/me
+  body: none
+  auth: bearer
+}
+
+headers {
+  : 
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2ZhMDRiOTg3NDk2NDU4YjJhZGVkYzciLCJyb2xlIjoidXNlciIsImlhdCI6MTc0NDQzODUwNSwiZXhwIjoxNzQ0NTI0OTA1fQ.BSLa-PyRJmLsk_7k2tt9E7GFfAxgYmKlmYoWG1J6zyA
+}
+
+body:json {
+  {
+    "email": "newtestuser@email.com",
+    "password": "newuserpassword"
+  }
+}

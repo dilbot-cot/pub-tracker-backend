@@ -1,0 +1,18 @@
+meta {
+  name: Login existing user
+  type: http
+  seq: 10
+}
+
+post {
+  url: http://localhost:5050/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "newtestuser@email.com",
+    "password": "newuserpassword"
+  }
+}

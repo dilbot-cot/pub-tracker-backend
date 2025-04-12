@@ -1,13 +1,21 @@
 const express = require('express');
 const router = express.Router();
-const mealTypeController = require('../controllers/mealTypeController');
+const authController = require('../controllers/authController');
 const auth = require('../middleware/auth');
-const checkRole = require('../middleware/roleCheck');
 
-// Public
-router.get('/', mealTypeController.getAllMealTypes);
+// @route   POST /api/auth/register
+// @desc    Register a new user
+// @access  Public
+router.post('/register', authController.register);
 
-// Admin only
-router.post('/', auth, checkRole('admin'), mealTypeController.createMealType);
+// @route   POST /api/auth/login
+// @desc    Login and get token
+// @access  Public
+router.post('/login', authController.login);
+
+// @route   DELETE /api/auth/delete
+// @desc    Delete own account
+// @access  Private
+router.delete('/delete', auth, authController.deleteAccount);
 
 module.exports = router;

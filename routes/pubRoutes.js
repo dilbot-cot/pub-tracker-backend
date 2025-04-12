@@ -8,17 +8,13 @@ const checkRole = require('../middleware/roleCheck');
 router.get('/', pubController.getAllPubs);
 router.get('/:id', pubController.getPubById);
 
-// Authenticated
-router.post('/', auth, pubController.createPub);
-router.put('/:id', auth, pubController.updateOwnPub);
-router.delete('/:id', auth, pubController.deleteOwnPub);
-
-// Specials
+// Authenticated: Specials (any user can add/edit/delete)
 router.post('/:id/specials', auth, pubController.addSpecialToPub);
 router.delete('/:id/specials/:specialId', auth, pubController.removeSpecialFromPub);
 
-// Admin override
-router.put('/:id/admin', auth, checkRole('admin'), pubController.adminUpdatePub);
-router.delete('/:id/admin', auth, checkRole('admin'), pubController.adminDeletePub);
+// Authenticated: Pubs (admin-only)
+router.post('/', auth, checkRole('admin'), pubController.createPub);
+router.put('/:id', auth, checkRole('admin'), pubController.adminUpdatePub);
+router.delete('/:id', auth, checkRole('admin'), pubController.adminDeletePub);
 
 module.exports = router;
